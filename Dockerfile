@@ -53,17 +53,21 @@ WORKDIR $ROS2_WS
 
 RUN wget https://raw.githubusercontent.com/ros2/ros2/crystal/ros2.repos && vcs import src < ros2.repos
 
-RUN rosdep install \
+RUN apt-get update && \
+    rosdep install \
     --from-paths src \
     --ignore-src \
     --rosdistro crystal -y \
     --skip-keys \
-    "console_bridge fastcdr fastrtps libopensplice67 libopensplice69 rti-connext-dds-5.3.1 urdfdom_headers python3-lark-parser python3-catkin-pkg-modules"
+    "console_bridge fastcdr fastrtps libopensplice67 libopensplice69 rti-connext-dds-5.3.1 urdfdom_headers python3-lark-parser python3-catkin-pkg-modules" && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN colcon --log-level info build --cmake-args -DSECURITY=ON --no-warn-unused-cli --symlink-install
 
 RUN cp /etc/skel/.bashrc ~/
 
 COPY ./ros2_entrypoint.sh /
+
+ENTRYPOINT ["/ros2_entrypoint.sh"]
 
 CMD ["bash"]
